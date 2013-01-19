@@ -23,6 +23,10 @@ else (DOXYGEN_FOUND)
 endif (DOXYGEN_FOUND)
 
 
+# Enable testing
+enable_testing()
+
+
 # Set subdirectories
 add_subdirectory(lib)
 add_subdirectory(exe)

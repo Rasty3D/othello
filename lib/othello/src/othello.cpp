@@ -332,6 +332,79 @@ void Othello::skip()
 		this->turn = OTHELLO_WHITE;
 }
 
+bool Othello::load(const char *name)
+{
+	// Open file
+	std::ifstream file;
+	file.open(name);
+
+	if (!file)
+		return false;
+
+	// Read history
+	unsigned char historyAux[OTHELLO_BOARD_SIZE * OTHELLO_HISTORY_SIZE];
+
+	for (int i = 0; i < OTHELLO_BOARD_SIZE; i++)
+	{
+		if (!this->loadBoard(file, &historyAux[i * OTHELLO_BOARD_SIZE]))
+		{
+			file.close();
+			return false;
+		}
+
+		if (this->turn != OTHELLO_EMPTY)
+		{
+			// Save history
+			memcpy(
+				this->history,
+				historyAux,
+				OTHELLO_BOARD_SIZE * OTHELLO_HISTORY_SIZE);
+
+			// Save board
+			memcpy(
+				this->board,
+				&historyAux[(i - 1) * OTHELLO_BOARD_SIZE],
+				OTHELLO_BOARD_SIZE);
+
+			break;
+		}
+	}
+
+	// Close file and exit
+	file.close();
+	return true;
+}
+
+bool Othello::save(const char *name)
+{
+	// Get counter
+	int counter = this->getCounter();
+
+	// Open file
+	std::ofstream file;
+	file.open(name);
+
+	if (!file)
+		return false;
+
+	// Write history
+	for (int i = 0; i < counter - 4; i++)
+		this->saveBoard(file, &this->history[i * OTHELLO_BOARD_SIZE]);
+
+	// Write board
+	this->saveBoard(file, this->board);
+
+	// Write turn
+	if (this->turn == OTHELLO_WHITE)
+		file << "Play white\n";
+	else //if (this->turn == OTHELLO_BLACK)
+		file << "Play black\n";
+
+	// Close file and exit
+	file.close();
+	return true;
+}
+
 int Othello::getCounter()
 {
 	int counter = 0;
@@ -470,21 +543,6 @@ bool Othello::checkDirection(
 		tiles[i] = &this->board[columnAux + rowAux * 8];
 	}
 
-	/*
-	std::cout << "Direction: " << directionColumn << ", " << directionRow << ": ";
-	for (int i = 0; i < 8; i++)
-	{
-		if (tiles[i] == NULL)
-			std::cout << "N";
-		else if (*tiles[i] == OTHELLO_EMPTY)
-			std::cout << "X";
-		else if (*tiles[i] == OTHELLO_WHITE)
-			std::cout << "W";
-		else if (*tiles[i] == OTHELLO_BLACK)
-			std::cout << "B";
-	}
-	std::cout << std::endl;*/
-
 	// Check next tile
 	if (tiles[1] == NULL || *tiles[1] == color || *tiles[1] == OTHELLO_EMPTY)
 		return false;
@@ -525,4 +583,90 @@ bool Othello::checkDirection(
 	}
 
 	return false;
+}
+
+void Othello::saveBoard(std::ofstream &file, unsigned char *board)
+{
+	file << " 12345678\n";
+
+	for (int i = 0; i < 8; i++)
+	{
+		file << (char)(i + 'A');
+
+		for (int j = 0; j < 8; j++)
+		{
+			switch (board[j + i * 8])
+			{
+			case OTHELLO_EMPTY:
+				file << " ";
+				break;
+			case OTHELLO_WHITE:
+				file << "X";
+				break;
+			case OTHELLO_BLACK:
+				file << "O";
+				break;
+			default:
+				file << "?";
+			}
+		}
+
+		file << "\n";
+	}
+}
+
+bool Othello::loadBoard(std::ifstream &file, unsigned char *board)
+{
+	// Read a line
+	char line[16];
+
+	// Check first line
+	file.getline(line, 16);
+
+	if (strcmp(line, " 12345678") == 0)			// Found a board
+	{
+		// Read board
+		for (int i = 0; i < 8; i++)
+		{
+			file.getline(line, 16);
+
+			if (line[0] != i + 'A')
+				return false;
+
+			for (int j = 0; j < 8; j++)
+			{
+				switch (line[j + 1])
+				{
+				case ' ':
+					board[j + i * 8] = OTHELLO_EMPTY;
+					break;
+				case 'X':
+					board[j + i * 8] = OTHELLO_WHITE;
+					break;
+				case 'O':
+					board[j + i * 8] = OTHELLO_BLACK;
+					break;
+				default:
+					return false;
+				}
+			}
+		}
+
+		this->turn = OTHELLO_EMPTY;
+		return true;
+	}
+	else if (strcmp(line, "Play white") == 0)	// Play white
+	{
+		this->turn = OTHELLO_WHITE;
+		return true;
+	}
+	else if (strcmp(line, "Play black") == 0)	// Play black
+	{
+		this->turn = OTHELLO_BLACK;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }

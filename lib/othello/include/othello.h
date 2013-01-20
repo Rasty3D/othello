@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string.h>
 
 #define OTHELLO_EMPTY	0
@@ -34,6 +35,8 @@ public:
 	bool addChip(const char *move);
 	void undo();
 	void skip();
+	bool load(const char *name);
+	bool save(const char *name);
 
 private:
 	int getCounter();
@@ -47,4 +50,7 @@ private:
 		int color,
 		int row, int column,
 		int directionRow, int directionColumn);
+
+	void saveBoard(std::ofstream &file, unsigned char *board);
+	bool loadBoard(std::ifstream &file, unsigned char *board);
 };

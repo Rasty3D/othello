@@ -159,6 +159,116 @@ void Othello::printBig()
 	}
 }
 
+void Othello::printBigColor()
+{
+	// Get counters
+	int whiteCounter;
+	int blackCounter;
+
+	this->getCounters(whiteCounter, blackCounter);
+
+	// Print header
+	std::cout << std::endl;
+	std::cout << "     1   2   3   4   5   6   7   8" << std::endl;
+	std::cout << "    ___ ___ ___ ___ ___ ___ ___ ___" << std::endl;
+
+	// Print board
+	for (int i = 0; i < 16; i++)
+	{
+		if ((i % 2) == 0)
+		{
+			std::cout << (char)(i / 2 + 'A') << "  |";
+
+			for (int j = 0; j < 8; j++)
+			{
+				switch (board[j + (i / 2) * 8])
+				{
+				case OTHELLO_EMPTY:
+					std::cout << "   |";
+					break;
+				case OTHELLO_WHITE:
+					std::cout << OTHELLO_COLOR_TILE_WHITE;
+					std::cout << "   ";
+					std::cout << OTHELLO_COLOR_RESET;
+					std::cout << "|";
+					break;
+				case OTHELLO_BLACK:
+					std::cout << OTHELLO_COLOR_TILE_BLACK;
+					std::cout << "   ";
+					std::cout << OTHELLO_COLOR_RESET;
+					std::cout << "|";
+					break;
+				default:
+					std::cout << "???|";
+				}
+			}
+		}
+		else
+		{
+			std::cout << "   |";
+
+			for (int j = 0; j < 8; j++)
+			{
+				switch (board[j + (i / 2) * 8])
+				{
+				case OTHELLO_EMPTY:
+					std::cout << "___|";
+					break;
+				case OTHELLO_WHITE:
+					std::cout << OTHELLO_COLOR_TILE_WHITE;
+					std::cout << "___";
+					std::cout << OTHELLO_COLOR_RESET;
+					std::cout << "|";
+					break;
+				case OTHELLO_BLACK:
+					std::cout << OTHELLO_COLOR_TILE_BLACK;
+					std::cout << "___";
+					std::cout << OTHELLO_COLOR_RESET;
+					std::cout << "|";
+					break;
+				default:
+					std::cout << "???|";
+				}
+			}
+		}
+
+		// Print white counter in the first row
+		if (i == 0)
+		{
+			std::cout << OTHELLO_COLOR_TEXT_WHITE;
+			std::cout << "    White: " << whiteCounter;
+			std::cout << OTHELLO_COLOR_RESET;
+		}
+
+		// Print black counter in the second row
+		if (i == 1)
+		{
+			std::cout << OTHELLO_COLOR_TEXT_BLACK;
+			std::cout << "    Red  : " << blackCounter;
+			std::cout << OTHELLO_COLOR_RESET;
+		}
+
+		// Print turn
+		if (i == 2)
+		{
+			std::cout << "    Next movement: ";
+			if (this->turn == OTHELLO_WHITE)
+			{
+				std::cout << OTHELLO_COLOR_TEXT_WHITE;
+				std::cout << "white";
+			}
+			else
+			{
+				std::cout << OTHELLO_COLOR_TEXT_BLACK;
+				std::cout << "red";
+			}
+			std::cout << OTHELLO_COLOR_RESET;
+		}
+
+		std::cout << std::endl;
+	}
+}
+
 bool Othello::addChip(const char *move)
 {
 	// Init row and column

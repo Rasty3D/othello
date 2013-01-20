@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	while (1)
 	{
 		// Print board
-		othello.printBig();
+		othello.printBigColor();
 
 		// Ask for new move
 		std::cout << std::endl;

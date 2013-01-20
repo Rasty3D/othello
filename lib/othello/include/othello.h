@@ -8,6 +8,12 @@
 #define OTHELLO_BOARD_SIZE		64
 #define OTHELLO_HISTORY_SIZE	60
 
+#define OTHELLO_COLOR_RESET			"\033[0m"
+#define OTHELLO_COLOR_TILE_WHITE	"\033[1;37;47m"
+#define OTHELLO_COLOR_TEXT_WHITE	"\033[1;37m"
+#define OTHELLO_COLOR_TILE_BLACK	"\033[1;37;41m"
+#define OTHELLO_COLOR_TEXT_BLACK	"\033[1;31m"
+
 class Othello
 {
 private:
@@ -23,6 +29,7 @@ public:
 
 	void printSmall();
 	void printBig();
+	void printBigColor();
 
 	bool addChip(const char *move);
 	void undo();

@@ -24,7 +24,7 @@ public:
 	void printSmall();
 	void printBig();
 
-	int addChip(const char *move);
+	bool addChip(const char *move);
 	void undo();
 	void skip();
 
@@ -34,5 +34,10 @@ private:
 	int getBlackCounter();
 	void getCounters(int &white, int &black);
 
-	int addChip(int color, int row, int column);
+	bool addChip(int color, int row, int column);
+
+	bool checkDirection(
+		int color,
+		int row, int column,
+		int directionRow, int directionColumn);
 };

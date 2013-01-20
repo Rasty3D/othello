@@ -159,7 +159,7 @@ void Othello::printBig()
 	}
 }
 
-int Othello::addChip(const char *move)
+bool Othello::addChip(const char *move)
 {
 	// Init row and column
 	int row = -1;
@@ -173,7 +173,7 @@ int Othello::addChip(const char *move)
 	else if (move[0] >= 'A' && move[0] <= 'H')
 		row = move[0] - 'A';
 	else
-		return 0;
+		return false;
 
 	// Get row & column
 	if (move[1] >= '1' && move[1] <= '8')
@@ -183,11 +183,11 @@ int Othello::addChip(const char *move)
 	else if (move[1] >= 'A' && move[1] <= 'H')
 		row = move[1] - 'A';
 	else
-		return 0;
+		return false;
 
 	// Check variables
 	if (row == -1 || column == -1)
-		return 0;
+		return false;
 
 	// Add chip
 	return this->addChip(this->turn, row, column);
@@ -275,43 +275,42 @@ void Othello::getCounters(int &white, int &black)
 	}
 }
 
-int Othello::addChip(int color, int row, int column)
+bool Othello::addChip(int color, int row, int column)
 {
 		/* Checkings */
 
 	// Check if tile is empty
 	if (this->board[column + row * 8] != OTHELLO_EMPTY)
-		return 0;
+		return false;
 
 
-		/* Check 8 directions */
+		/* Save history */
 
-	int otherColor = (color == OTHELLO_WHITE ? OTHELLO_BLACK : OTHELLO_WHITE);
-
-	// Direction N
-	if (row > 1 && this->board[column + (row - 1) * 8] == otherColor)
-	{
-		for (int i = row - 2; i >= 0; i--)
-		{
-			if (this->board[column + i * 8] == color)
-			{
-				for (int j = i + 1; j < row; j++)
-					this->board[column + j * 8] = color;
-
-				break;
-			}
-		}
-	}
-
-
-		/* Do last things */
-
-	// Save history
 	int counter = this->getCounter() - 4;
 	memcpy(
 		&this->history[counter * OTHELLO_BOARD_SIZE],
 		this->board,
 		OTHELLO_BOARD_SIZE);
+
+
+		/* Check 8 directions */
+
+	bool check = false;
+
+	if (this->checkDirection(color, row, column, -1, -1)) check = true;
+	if (this->checkDirection(color, row, column, -1,  0)) check = true;
+	if (this->checkDirection(color, row, column, -1,  1)) check = true;
+	if (this->checkDirection(color, row, column,  0, -1)) check = true;
+	if (this->checkDirection(color, row, column,  0,  1)) check = true;
+	if (this->checkDirection(color, row, column,  1, -1)) check = true;
+	if (this->checkDirection(color, row, column,  1,  0)) check = true;
+	if (this->checkDirection(color, row, column,  1,  1)) check = true;
+
+	if (!check)
+		return false;
+
+
+		/* Do last things */
 
 	// Set tile color
 	this->board[column + row * 8] = color;
@@ -323,5 +322,97 @@ int Othello::addChip(int color, int row, int column)
 		this->turn = OTHELLO_WHITE;
 
 	// Return ok
-	return 1;
+	return true;
+}
+
+bool Othello::checkDirection(
+	int color,
+	int row, int column,
+	int directionRow, int directionColumn)
+{
+	// Write in a vector the tiles of the direction
+	unsigned char *tiles[8];
+	int rowAux;
+	int columnAux;
+
+	tiles[0] = NULL;
+	tiles[1] = NULL;
+	tiles[2] = NULL;
+	tiles[3] = NULL;
+	tiles[4] = NULL;
+	tiles[5] = NULL;
+	tiles[6] = NULL;
+	tiles[7] = NULL;
+
+	for (int i = 0; i < 8; i++)
+	{
+		rowAux    = row    + directionRow    * i;
+		columnAux = column + directionColumn * i;
+
+		if (rowAux    < 0 || rowAux    >= 8 ||
+			columnAux < 0 || columnAux >= 8)
+		{
+			if (i <= 1)
+				return false;
+			break;
+		}
+
+		tiles[i] = &this->board[columnAux + rowAux * 8];
+	}
+
+	/*
+	std::cout << "Direction: " << directionColumn << ", " << directionRow << ": ";
+	for (int i = 0; i < 8; i++)
+	{
+		if (tiles[i] == NULL)
+			std::cout << "N";
+		else if (*tiles[i] == OTHELLO_EMPTY)
+			std::cout << "X";
+		else if (*tiles[i] == OTHELLO_WHITE)
+			std::cout << "W";
+		else if (*tiles[i] == OTHELLO_BLACK)
+			std::cout << "B";
+	}
+	std::cout << std::endl;*/
+
+	// Check next tile
+	if (tiles[1] == NULL || *tiles[1] == color || *tiles[1] == OTHELLO_EMPTY)
+		return false;
+
+	// Look for the line of different color
+	for (int i = 2; i <= 8; i++)
+	{
+		// Not found a tile with the same color
+		if (i == 8)
+			return false;
+
+		// Not found a tile with the same color
+		if (tiles[i] == NULL)
+			return false;
+
+		// Found an empty tile
+		if (*tiles[i] == OTHELLO_EMPTY)
+			return false;
+
+		// Found one with the same color
+		if (*tiles[i] == color)
+			break;
+	}
+
+	// Change color of the line
+	for (int i = 1; i < 8; i++)
+	{
+		// This shouldn't happen
+		if (tiles[i] == NULL)
+			return false;
+
+		// Finished
+		if (*tiles[i] == color)
+			return true;
+
+		// Change tile color
+		*tiles[i] = color;
+	}
+
+	return false;
 }

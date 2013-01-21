@@ -65,7 +65,11 @@ int main(int argc, char *argv[])
 		}
 		else if (answer == "auto")
 		{
-			// TODO
+			if (!othello.engineMove())
+			{
+				std::cout << "The automatic movement couldn't be done";
+				std::cout << std::endl;
+			}
 			continue;
 		}
 		else if (answer == "help")

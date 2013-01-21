@@ -12,6 +12,6 @@ add_library(othello
 add_executable(test_othello
   test/test_othello.cpp)
 target_link_libraries(test_othello
-  othello)
+  othello dl)
 add_test(othello
   ${EXECUTABLE_OUTPUT_PATH}/test_othello)

@@ -3,10 +3,17 @@
 Othello::Othello()
 {
 	this->reset();
+
+	this->engine.handle   = NULL;
+	this->engine.getName  = NULL;
+	this->engine.setParam = NULL;
+	this->engine.move     = NULL;
 }
 
 Othello::~Othello()
 {
+	if (this->engine.handle != NULL)
+		dlclose(this->engine.handle);
 }
 
 void Othello::reset()
@@ -403,6 +410,99 @@ bool Othello::save(const char *name)
 	// Close file and exit
 	file.close();
 	return true;
+}
+
+bool Othello::engineLoad(const char *name)
+{
+	if (this->engine.handle != NULL)
+		dlclose(this->engine.handle);
+
+	char *error;
+
+	this->engine.handle = dlopen(name, RTLD_NOW | RTLD_LOCAL);
+
+	if (this->engine.handle == NULL)
+	{
+		std::cout << "Error opening engine [" << dlerror() << "]" << std::endl;
+		return false;
+	}
+
+	*(void**)(&this->engine.getName) = dlsym(this->engine.handle, "getName");
+
+	if ((error = dlerror()) != NULL)
+	{
+		std::cout << "Error loading 'getName' function [" << error << "]" << std::endl;
+		dlclose(this->engine.handle);
+		this->engine.handle = NULL;
+		return false;
+	}
+
+	*(void**)(&this->engine.setParam) = dlsym(this->engine.handle, "setParam");
+
+	if ((error = dlerror()) != NULL)
+	{
+		std::cout << "Error loading 'setParam' function [" << error << "]" << std::endl;
+		dlclose(this->engine.handle);
+		this->engine.handle = NULL;
+		return false;
+	}
+
+	*(void**)(&this->engine.move) = dlsym(this->engine.handle, "move");
+
+	if ((error = dlerror()) != NULL)
+	{
+		std::cout << "Error loading 'move' function [" << error << "]" << std::endl;
+		dlclose(this->engine.handle);
+		this->engine.handle = NULL;
+		return false;
+	}
+
+	return true;
+}
+
+char *Othello::engineGetName()
+{
+	// Check engine
+	if (this->engine.handle  == NULL ||
+		this->engine.getName == NULL)
+	{
+		std::cout << "The engine is not ready" << std::endl;
+		return NULL;
+	}
+
+	return (this->engine.getName)();
+}
+
+bool Othello::engineSetParam(const char *name, const char *value)
+{
+	// Check engine
+	if (this->engine.handle   == NULL ||
+		this->engine.setParam == NULL)
+	{
+		std::cout << "The engine is not ready" << std::endl;
+		return false;
+	}
+
+	return (this->engine.setParam)(name, value);
+}
+
+bool Othello::engineMove()
+{
+	// Check engine
+	if (this->engine.handle == NULL ||
+		this->engine.move   == NULL)
+	{
+		std::cout << "The engine is not ready" << std::endl;
+		return false;
+	}
+
+	char move[2];
+
+	if (!(this->engine.move)(this->board, this->turn, move))
+		return false;
+
+	// Do move
+	return this->addChip(move);
 }
 
 int Othello::getCounter()

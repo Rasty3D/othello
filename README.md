@@ -28,7 +28,8 @@ After this command you have to regenerate the cmake (see above).
 Executing a program
 -------------------
 
-The executable files are placed in the build/bin folder. You can launch the programs from the build folder like this:
+The executable files are placed in the build/bin folder. You can launch the
+programs from the build folder like this:
 
     othello/build$ ./bin/othello_text
     

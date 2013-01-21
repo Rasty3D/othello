@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include "othello.h"
 
 int main(int argc, char *argv[])
@@ -7,9 +8,13 @@ int main(int argc, char *argv[])
 	Othello othello;
 	othello.reset();
 
+	// Savegame folder
+	std::string rootDir = ROOT_DIR;
+	std::string savegameDir = rootDir + "/data/";
+
 	// Answer
-	char answer[128];
-	char name[256];
+	std::string answer;
+	std::string name;
 
 	// Main loop
 	while (1)
@@ -20,51 +25,50 @@ int main(int argc, char *argv[])
 		// Ask for new move
 		std::cout << std::endl;
 		std::cout << "Enter command> ";
-		std::cin >> answer;
+		std::getline(std::cin, answer);
 
 		// Check exit
-		if (strcmp(answer, "exit") == 0 ||
-			strcmp(answer, "quit") == 0)
+		if (answer == "exit" || answer == "quit")
 		{
 			break;
 		}
-		else if (strcmp(answer, "undo") == 0)
+		else if (answer == "undo")
 		{
 			othello.undo();
 			continue;
 		}
-		else if (strcmp(answer, "skip") == 0)
+		else if (answer == "skip")
 		{
 			othello.skip();
 			continue;
 		}
-		else if (strcmp(answer, "new") == 0)
+		else if (answer == "new")
 		{
 			othello.reset();
 			continue;
 		}
-		else if (strcmp(answer, "load") == 0)
+		else if (answer == "load")
 		{
 			std::cout << "Insert name> ";
-			std::cin >> name;
-			if (!othello.load(name))
+			std::getline(std::cin, name);
+			if (!othello.load((savegameDir + name).c_str()))
 				std::cout << "Error loading game" << std::endl;
 			continue;
 		}
-		else if (strcmp(answer, "save") == 0)
+		else if (answer == "save")
 		{
 			std::cout << "Insert name> ";
-			std::cin >> name;
-			if (!othello.save(name))
+			std::getline(std::cin, name);
+			if (!othello.save((savegameDir + name).c_str()))
 				std::cout << "Error saving game" << std::endl;
 			continue;
 		}
-		else if (strcmp(answer, "auto") == 0)
+		else if (answer == "auto")
 		{
 			// TODO
 			continue;
 		}
-		else if (strcmp(answer, "help") == 0)
+		else if (answer == "help")
 		{
 			std::cout << "Command list:" << std::endl;
 			std::cout << "  help: Shows this message" << std::endl;
@@ -81,11 +85,8 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		// Check other options (save, load, help, etc)
-		// TODO
-
 		// Add chip
-		if (!othello.addChip(answer))
+		if (!othello.addChip(answer.c_str()))
 			std::cout << "Wrong movement" << std::endl;
 
 	}

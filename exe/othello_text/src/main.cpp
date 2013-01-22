@@ -8,9 +8,9 @@ int main(int argc, char *argv[])
 	Othello othello;
 	othello.reset();
 
-	// Savegame folder
-	std::string rootDir = ROOT_DIR;
-	std::string savegameDir = rootDir + "/data/";
+	// Folders
+	std::string savegameDir = "../data/";
+	std::string enginesDir = "../bin/";
 
 	// Answer
 	std::string answer;
@@ -63,13 +63,35 @@ int main(int argc, char *argv[])
 				std::cout << "Error saving game" << std::endl;
 			continue;
 		}
-		else if (answer == "auto")
+		else if (answer == "eng_load")
+		{
+			std::cout << "Engine name> ";
+			std::getline(std::cin, name);
+			if (!othello.engineLoad((enginesDir + name + ".eng").c_str()))
+				std::cout << "Error loading engine" << std::endl;
+			continue;
+		}
+		else if (answer == "eng_move")
 		{
 			if (!othello.engineMove())
 			{
-				std::cout << "The automatic movement couldn't be done";
+				std::cout << "Invalid engine move";
 				std::cout << std::endl;
 			}
+			continue;
+		}
+		else if (answer == "eng_name")
+		{
+			const char *name = othello.engineGetName();
+			if (name == NULL)
+				std::cout << "Error getting engine name" << std::endl;
+			else
+				std::cout << "Current engine name: " << name << std::endl;
+			continue;
+		}
+		else if (answer == "eng_prop")
+		{
+			// TODO
 			continue;
 		}
 		else if (answer == "help")
@@ -83,7 +105,10 @@ int main(int argc, char *argv[])
 			std::cout << "  new : Starts a new game" << std::endl;
 			std::cout << "  load: Loads a game" << std::endl;
 			std::cout << "  save: Saves a game" << std::endl;
-			std::cout << "  auto: Does an automatic move" << std::endl;
+			std::cout << "  eng_load: Loads an engine" << std::endl;
+			std::cout << "  eng_move: The current engine does a move" << std::endl;
+			std::cout << "  eng_name: Gets current engine name" << std::endl;
+			std::cout << "  eng_prop: Sets a property of the current engine" << std::endl;
 			std::cout << "  To introduce a new move, write row and column";
 			std::cout << " (for example 4f)" << std::endl;
 			continue;

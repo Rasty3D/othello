@@ -19,7 +19,7 @@
 typedef struct
 {
 	void *handle;
-	char *(*getName)();
+	const char *(*getName)();
 	bool (*setParam)(const char*, const char*);		// Param name, param value
 	bool (*move)(const unsigned char*, int, char*);	// Board, turn, movement
 }Othello_engine;
@@ -49,7 +49,7 @@ public:
 	bool save(const char *name);
 
 	bool engineLoad(const char *name);
-	char *engineGetName();
+	const char *engineGetName();
 	bool engineSetParam(const char *name, const char *value);
 	bool engineMove();
 

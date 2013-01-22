@@ -460,7 +460,7 @@ bool Othello::engineLoad(const char *name)
 	return true;
 }
 
-char *Othello::engineGetName()
+const char *Othello::engineGetName()
 {
 	// Check engine
 	if (this->engine.handle  == NULL ||

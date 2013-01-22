@@ -4,7 +4,6 @@ project(othello)
 set(CMAKE_MODULE_PATH ${ROOT_DIR}/cmake)
 set(EXECUTABLE_OUTPUT_PATH ../../bin)
 set(LIBRARY_OUTPUT_PATH ../../bin)
-add_definitions(-DROOT_DIR="${ROOT_DIR}")
 
 
 # Compiler options
@@ -31,4 +30,3 @@ enable_testing()
 # Set subdirectories
 add_subdirectory(lib)
 add_subdirectory(exe)
-

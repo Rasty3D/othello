@@ -1,3 +1,5 @@
+#include "othello.h"
+
 static const char *name = "maxchips";
 
 extern "C" const char *getName()
@@ -11,10 +13,11 @@ extern "C" bool setParam(const char *name, const char *value)
 	return false;
 }
 
-extern "C" bool move(const unsigned char *board, int turn, char *move)
+extern "C" bool move(Othello_board board, int turn, char *move)
 {
 	// TODO
 	move[0] = '4';
 	move[1] = 'f';
+
 	return true;
 }

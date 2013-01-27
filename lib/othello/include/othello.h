@@ -7,7 +7,6 @@
 #define OTHELLO_WHITE	1
 #define OTHELLO_BLACK	2
 
-#define OTHELLO_BOARD_SIZE		64
 #define OTHELLO_HISTORY_SIZE	64
 
 #define OTHELLO_COLOR_RESET			"\033[0m"
@@ -18,18 +17,24 @@
 
 typedef struct
 {
+	unsigned int white[2];
+	unsigned int black[2];
+}Othello_board;
+
+typedef struct
+{
 	void *handle;
 	const char *(*getName)();
-	bool (*setParam)(const char*, const char*);		// Param name, param value
-	bool (*move)(const unsigned char*, int, char*);	// Board, turn, movement
+	bool (*setParam)(const char*, const char*);	// Param name, param value
+	bool (*move)(Othello_board, int, char*);	// Board, turn, movement
 }Othello_engine;
 
 class Othello
 {
 private:
-	unsigned char board[OTHELLO_BOARD_SIZE];
+	Othello_board board;
 	int turn;
-	unsigned char history[OTHELLO_BOARD_SIZE * OTHELLO_HISTORY_SIZE];
+	Othello_board history[OTHELLO_HISTORY_SIZE];
 	Othello_engine engine;
 
 public:
@@ -58,14 +63,13 @@ private:
 	int getWhiteCounter();
 	int getBlackCounter();
 	void getCounters(int &white, int &black);
+	int getColor(int row, int col);
+	void setColor(int row, int col, int color);
 
-	bool addChip(int color, int row, int column);
+	bool addChip(int color, int row, int col);
 
-	bool checkDirection(
-		int color,
-		int row, int column,
-		int directionRow, int directionColumn);
-
-	void saveBoard(std::ofstream &file, unsigned char *board);
-	bool loadBoard(std::ifstream &file, unsigned char *board);
+	void saveBoard(std::ofstream &file, Othello_board *board);
+	bool loadBoard(std::ifstream &file, Othello_board *board);
 };
+
+bool Othello_move(Othello_board *board,	int row, int col, int color);

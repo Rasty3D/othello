@@ -25,6 +25,10 @@ int main(int argc, char *argv[])
 	std::string answer;
 	std::string name;
 
+	// Time
+	struct timespec time0, time1;
+	double timeDelta;
+
 	// Main loop
 	while (1)
 	{
@@ -124,9 +128,16 @@ int main(int argc, char *argv[])
 		}
 
 		// Add chip
+		clock_gettime(CLOCK_REALTIME, &time0);
+
 		if (!othello.addChip(answer.c_str()))
 			std::cout << "Wrong movement" << std::endl;
 
+		clock_gettime(CLOCK_REALTIME, &time1);
+		timeDelta =
+			1E3 * (double)(time1.tv_sec - time0.tv_sec) +
+			1E-6 * (double)(time1.tv_nsec - time0.tv_nsec);
+		std::cout << "Motion time: " << timeDelta << "ms" << std::endl;
 	}
 
 	return 0;

@@ -696,7 +696,6 @@ bool Othello_move(Othello_board *board,	int row, int col, int color)
 	unsigned int size   = othello_LUTOffset[(col + row * 8) * 2 + 1];
 	Othello_LUT *lut = &othello_LUT[offset];
 	bool moved = false;
-	unsigned int aux[2];
 	unsigned int other[2];
 
 	if (color == OTHELLO_WHITE)

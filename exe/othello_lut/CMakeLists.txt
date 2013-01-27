@@ -7,5 +7,3 @@ include_directories(${ROOT_DIR}/lib/othello/include)
 # Add executable
 add_executable(othello_lut
   src/main.cpp)
-install(TARGETS othello_lut
-  RUNTIME DESTINATION ${ROOT_DIR}/bin)

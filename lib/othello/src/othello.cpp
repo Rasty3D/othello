@@ -27,10 +27,8 @@ Othello::~Othello()
 
 void Othello::reset()
 {
-	this->board.white[0] = 0;
-	this->board.white[1] = 0;
-	this->board.black[0] = 0;
-	this->board.black[1] = 0;
+	this->board.white = 0;
+	this->board.black = 0;
 	this->setColor(3, 3, OTHELLO_WHITE);
 	this->setColor(4, 4, OTHELLO_WHITE);
 	this->setColor(3, 4, OTHELLO_BLACK);
@@ -510,41 +508,41 @@ bool Othello::engineMove()
 int Othello::getCounter()
 {
 	return
-		__builtin_popcount(this->board.white[0]) +
-		__builtin_popcount(this->board.white[1]) +
-		__builtin_popcount(this->board.black[0]) +
-		__builtin_popcount(this->board.black[1]);
+		__builtin_popcount(((unsigned int*)&this->board.white)[0]) +
+		__builtin_popcount(((unsigned int*)&this->board.white)[1]) +
+		__builtin_popcount(((unsigned int*)&this->board.black)[0]) +
+		__builtin_popcount(((unsigned int*)&this->board.black)[1]);
 }
 
 int Othello::getWhiteCounter()
 {
 	return
-		__builtin_popcount(this->board.white[0]) +
-		__builtin_popcount(this->board.white[1]);
+		__builtin_popcount(((unsigned int*)&this->board.white)[0]) +
+		__builtin_popcount(((unsigned int*)&this->board.white)[1]);
 }
 
 int Othello::getBlackCounter()
 {
 	return
-		__builtin_popcount(this->board.black[0]) +
-		__builtin_popcount(this->board.black[1]);
+		__builtin_popcount(((unsigned int*)&this->board.black)[0]) +
+		__builtin_popcount(((unsigned int*)&this->board.black)[1]);
 }
 
 void Othello::getCounters(int &white, int &black)
 {
 	white =
-		__builtin_popcount(this->board.white[0]) +
-		__builtin_popcount(this->board.white[1]);
+		__builtin_popcount(((unsigned int*)&this->board.white)[0]) +
+		__builtin_popcount(((unsigned int*)&this->board.white)[1]);
 	black =
-		__builtin_popcount(this->board.black[0]) +
-		__builtin_popcount(this->board.black[1]);
+		__builtin_popcount(((unsigned int*)&this->board.black)[0]) +
+		__builtin_popcount(((unsigned int*)&this->board.black)[1]);
 }
 
 int Othello::getColor(int row, int col)
 {
 	int mask = 1 << col;
-	unsigned char *lineWhite = (unsigned char*)&this->board.white[0];
-	unsigned char *lineBlack = (unsigned char*)&this->board.black[0];
+	unsigned char *lineWhite = (unsigned char*)&this->board.white;
+	unsigned char *lineBlack = (unsigned char*)&this->board.black;
 
 	if (lineWhite[row] & mask)
 		return OTHELLO_WHITE;
@@ -559,9 +557,9 @@ void Othello::setColor(int row, int col, int color)
 	unsigned char *line;
 
 	if (color == OTHELLO_WHITE)
-		line = (unsigned char*)&this->board.white[0];
+		line = (unsigned char*)&this->board.white;
 	else
-		line = (unsigned char*)&this->board.black[0];
+		line = (unsigned char*)&this->board.black;
 
 	line[row] = line[row] | (1 << col);
 }
@@ -690,45 +688,40 @@ bool Othello::loadBoard(std::ifstream &file, Othello_board *board)
 bool Othello_move(Othello_board *board,	int row, int col, int color)
 {
 	unsigned char mask = 1 << col;
-	unsigned int *lineColor;
-	unsigned int *lineOther;
+	unsigned long *lineColor;
+	unsigned long *lineOther;
 	unsigned int offset = othello_LUTOffset[(col + row * 8) * 2];
 	unsigned int size   = othello_LUTOffset[(col + row * 8) * 2 + 1];
 	Othello_LUT *lut = &othello_LUT[offset];
 	bool moved = false;
-	unsigned int other[2];
+	unsigned long other;
 
 	if (color == OTHELLO_WHITE)
 	{
-		lineColor = &board->white[0];
-		lineOther = &board->black[0];
+		lineColor = &board->white;
+		lineOther = &board->black;
 	}
 	else
 	{
-		lineColor = &board->black[0];
-		lineOther = &board->white[0];
+		lineColor = &board->black;
+		lineOther = &board->white;
 	}
 
 	// Check if the tile is empty
-	if (((unsigned char*)board->white)[row] & mask ||
-		((unsigned char*)board->black)[row] & mask)
+	if (((unsigned char*)&board->white)[row] & mask ||
+		((unsigned char*)&board->black)[row] & mask)
 		return false;
 
 	// Iterate in the positions
 	for (unsigned int i = 0; i < size; i++)
 	{
-		other[0] = ~lut[i].color[0] & lut[i].mask[0];
-		other[1] = ~lut[i].color[1] & lut[i].mask[1];
+		other = ~lut[i].color & lut[i].mask;
 
-		if (((lineColor[0] & lut[i].color[0]) |
-			 (lineOther[0] &        other[0])) == lut[i].mask[0] &&
-			((lineColor[1] & lut[i].color[1]) |
-			 (lineOther[1] &        other[1])) == lut[i].mask[1])
+		if (((*lineColor & lut[i].color) |
+			 (*lineOther &        other)) == lut[i].mask)
 		{
-			lineColor[0] += other[0];
-			lineColor[1] += other[1];
-			lineOther[0] -= other[0];
-			lineOther[1] -= other[1];
+			*lineColor += other;
+			*lineOther -= other;
 			moved = true;
 		}
 	}

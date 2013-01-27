@@ -47,6 +47,14 @@ IFS="$OLDIFS"
 OPTIONS="-DROOT_DIR=$ROOT_DIR"
 
 
+# Detecting architecture
+echo -ne "${COLOR_INFO}Detecting architecture..."
+ARCH=$(uname -m)
+echo -e "${COLOR_ITEM}${ARCH}"
+OPTIONS="$OPTIONS -DARCH=$ARCH"
+color_reset
+
+
 # Launch cmake with the automatic options
 echo "Launching CMake:"
 echo "  cmake $OPTIONS"

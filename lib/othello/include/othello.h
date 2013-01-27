@@ -10,7 +10,11 @@
 #include <string.h>
 #include <dlfcn.h>
 
+#ifdef ARCH_x86_64
+#include "lut64.h"
+#else
 #include "lut.h"
+#endif
 
 
 /*
@@ -34,11 +38,19 @@
  * TYPES
  */
 
+#ifdef ARCH_x86_64
+typedef struct
+{
+	unsigned long white;
+	unsigned long black;
+}Othello_board;
+#else
 typedef struct
 {
 	unsigned int white[2];
 	unsigned int black[2];
 }Othello_board;
+#endif
 
 typedef struct
 {

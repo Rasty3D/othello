@@ -5,9 +5,15 @@ project(othello)
 include_directories(include)
 
 # Add library
-add_library(othello
-  src/othello.cpp
-  src/lut.cpp)
+if (${ARCH} STREQUAL "x86_64")
+  add_library(othello
+    src/othello.cpp
+    src/lut.cpp)
+else ()
+  add_library(othello
+    src/othello.cpp
+    src/lut64.cpp)
+endif ()
 
 # Add test
 add_executable(test_othello

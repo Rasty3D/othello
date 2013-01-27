@@ -6,7 +6,8 @@ include_directories(include)
 
 # Add library
 add_library(othello
-  src/othello.cpp)
+  src/othello.cpp
+  src/lut.cpp)
 
 # Add test
 add_executable(test_othello

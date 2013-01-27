@@ -1,6 +1,15 @@
+/*
+ * INCLUDES
+ */
+
 #include <iostream>
 #include <string>
 #include "othello.h"
+
+
+/*
+ * MAIN
+ */
 
 int main(int argc, char *argv[])
 {

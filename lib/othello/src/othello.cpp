@@ -1,4 +1,13 @@
+/*
+ * INCLUDES
+ */
+
 #include "othello.h"
+
+
+/*
+ * CLASSES
+ */
 
 Othello::Othello()
 {
@@ -673,17 +682,60 @@ bool Othello::loadBoard(std::ifstream &file, Othello_board *board)
 	}
 }
 
+
+/*
+ * FUNCTIONS
+ */
+
 bool Othello_move(Othello_board *board,	int row, int col, int color)
 {
-	int mask = 1 << col;
-	unsigned char *lineWhite = (unsigned char*)&board->white[0];
-	unsigned char *lineBlack = (unsigned char*)&board->black[0];
+	unsigned char mask = 1 << col;
+	unsigned int *lineColor;
+	unsigned int *lineOther;
+	unsigned int offset = othello_LUTOffset[(col + row * 8) * 2];
+	unsigned int size   = othello_LUTOffset[(col + row * 8) * 2 + 1];
+	Othello_LUT *lut = &othello_LUT[offset];
+	bool moved = false;
+	unsigned int aux[2];
+	unsigned int other[2];
+
+	if (color == OTHELLO_WHITE)
+	{
+		lineColor = &board->white[0];
+		lineOther = &board->black[0];
+	}
+	else
+	{
+		lineColor = &board->black[0];
+		lineOther = &board->white[0];
+	}
 
 	// Check if the tile is empty
-	if (lineWhite[row] & mask || lineBlack[row] & mask)
+	if (((unsigned char*)board->white)[row] & mask ||
+		((unsigned char*)board->black)[row] & mask)
 		return false;
 
+	// Iterate in the positions
+	for (unsigned int i = 0; i < size; i++)
+	{
+		other[0] = ~lut[i].color[0] & lut[i].mask[0];
+		other[1] = ~lut[i].color[1] & lut[i].mask[1];
 
+		if (((lineColor[0] & lut[i].color[0]) |
+			 (lineOther[0] &        other[0])) == lut[i].mask[0] &&
+			((lineColor[1] & lut[i].color[1]) |
+			 (lineOther[1] &        other[1])) == lut[i].mask[1])
+		{
+			lineColor[0] += other[0];
+			lineColor[1] += other[1];
+			lineOther[0] -= other[0];
+			lineOther[1] -= other[1];
+			moved = true;
+		}
+	}
 
-	return true;
+	if (moved)
+		((unsigned char*)lineColor)[row] |= mask;
+
+	return moved;
 }

@@ -1,7 +1,21 @@
+#ifndef OTHELLO
+#define OTHELLO
+
+/*
+ * INCLUDES
+ */
+
 #include <iostream>
 #include <fstream>
 #include <string.h>
 #include <dlfcn.h>
+
+#include "lut.h"
+
+
+/*
+ * DEFINES
+ */
 
 #define OTHELLO_EMPTY	0
 #define OTHELLO_WHITE	1
@@ -14,6 +28,11 @@
 #define OTHELLO_COLOR_TEXT_WHITE	"\033[1;37m"
 #define OTHELLO_COLOR_TILE_BLACK	"\033[1;37;41m"
 #define OTHELLO_COLOR_TEXT_BLACK	"\033[1;31m"
+
+
+/*
+ * TYPES
+ */
 
 typedef struct
 {
@@ -28,6 +47,11 @@ typedef struct
 	bool (*setParam)(const char*, const char*);	// Param name, param value
 	bool (*move)(Othello_board, int, char*);	// Board, turn, movement
 }Othello_engine;
+
+
+/*
+ * CLASSES
+ */
 
 class Othello
 {
@@ -72,4 +96,11 @@ private:
 	bool loadBoard(std::ifstream &file, Othello_board *board);
 };
 
+
+/*
+ * FUNCTIONS
+ */
+
 bool Othello_move(Othello_board *board,	int row, int col, int color);
+
+#endif	/* OTHELLO */

@@ -83,7 +83,7 @@ public:
 	void printBig();
 	void printBigColor();
 
-	bool addChip(const char *move);
+	bool move(const char *move);
 	void undo();
 	void skip();
 	bool load(const char *name);
@@ -102,7 +102,7 @@ private:
 	int getColor(int row, int col);
 	void setColor(int row, int col, int color);
 
-	bool addChip(int color, int row, int col);
+	bool move(int color, int row, int col);
 
 	void saveBoard(std::ofstream &file, Othello_board *board);
 	bool loadBoard(std::ifstream &file, Othello_board *board);
@@ -113,6 +113,10 @@ private:
  * FUNCTIONS
  */
 
+int  Othello_getWhiteCounter(Othello_board *board);
+int  Othello_getBlackCounter(Othello_board *board);
+int  Othello_getColor(Othello_board *board, int row, int col);
+void Othello_setColor(Othello_board *board, int row, int col, int color);
 bool Othello_move(Othello_board *board,	int row, int col, int color);
 
 #endif	/* OTHELLO */

@@ -27,8 +27,15 @@ Othello::~Othello()
 
 void Othello::reset()
 {
+#ifdef ARCH_x86_64
 	this->board.white = 0;
 	this->board.black = 0;
+#else
+	this->board.white[0] = 0;
+	this->board.white[1] = 0;
+	this->board.black[0] = 0;
+	this->board.black[1] = 0;
+#endif
 	this->setColor(3, 3, OTHELLO_WHITE);
 	this->setColor(4, 4, OTHELLO_WHITE);
 	this->setColor(3, 4, OTHELLO_BLACK);
@@ -282,7 +289,7 @@ void Othello::printBigColor()
 	}
 }
 
-bool Othello::addChip(const char *move)
+bool Othello::move(const char *move)
 {
 	// Init row and column
 	int row = -1;
@@ -313,7 +320,7 @@ bool Othello::addChip(const char *move)
 		return false;
 
 	// Add chip
-	return this->addChip(this->turn, row, col);
+	return this->move(this->turn, row, col);
 }
 
 void Othello::undo()
@@ -502,69 +509,43 @@ bool Othello::engineMove()
 		return false;
 
 	// Do move
-	return this->addChip(move);
+	return this->move(move);
 }
 
 int Othello::getCounter()
 {
 	return
-		__builtin_popcount(((unsigned int*)&this->board.white)[0]) +
-		__builtin_popcount(((unsigned int*)&this->board.white)[1]) +
-		__builtin_popcount(((unsigned int*)&this->board.black)[0]) +
-		__builtin_popcount(((unsigned int*)&this->board.black)[1]);
+		Othello_getWhiteCounter(&this->board) +
+		Othello_getBlackCounter(&this->board);
 }
 
 int Othello::getWhiteCounter()
 {
-	return
-		__builtin_popcount(((unsigned int*)&this->board.white)[0]) +
-		__builtin_popcount(((unsigned int*)&this->board.white)[1]);
+	return Othello_getWhiteCounter(&this->board);
 }
 
 int Othello::getBlackCounter()
 {
-	return
-		__builtin_popcount(((unsigned int*)&this->board.black)[0]) +
-		__builtin_popcount(((unsigned int*)&this->board.black)[1]);
+	return Othello_getBlackCounter(&this->board);
 }
 
 void Othello::getCounters(int &white, int &black)
 {
-	white =
-		__builtin_popcount(((unsigned int*)&this->board.white)[0]) +
-		__builtin_popcount(((unsigned int*)&this->board.white)[1]);
-	black =
-		__builtin_popcount(((unsigned int*)&this->board.black)[0]) +
-		__builtin_popcount(((unsigned int*)&this->board.black)[1]);
+	white = Othello_getWhiteCounter(&this->board);
+	black = Othello_getBlackCounter(&this->board);
 }
 
 int Othello::getColor(int row, int col)
 {
-	int mask = 1 << col;
-	unsigned char *lineWhite = (unsigned char*)&this->board.white;
-	unsigned char *lineBlack = (unsigned char*)&this->board.black;
-
-	if (lineWhite[row] & mask)
-		return OTHELLO_WHITE;
-	else if (lineBlack[row] & mask)
-		return OTHELLO_BLACK;
-	else
-		return OTHELLO_EMPTY;
+	return Othello_getColor(&this->board, row, col);
 }
 
 void Othello::setColor(int row, int col, int color)
 {
-	unsigned char *line;
-
-	if (color == OTHELLO_WHITE)
-		line = (unsigned char*)&this->board.white;
-	else
-		line = (unsigned char*)&this->board.black;
-
-	line[row] = line[row] | (1 << col);
+	Othello_setColor(&this->board, row, col, color);
 }
 
-bool Othello::addChip(int color, int row, int col)
+bool Othello::move(int color, int row, int col)
 {
 		/* Save history */
 
@@ -604,7 +585,7 @@ void Othello::saveBoard(std::ofstream &file, Othello_board *board)
 
 		for (int col = 0; col < 8; col++)
 		{
-			switch (this->getColor(row, col))
+			switch (Othello_getColor(board, row, col))
 			{
 			case OTHELLO_EMPTY:
 				file << " ";
@@ -634,6 +615,9 @@ bool Othello::loadBoard(std::ifstream &file, Othello_board *board)
 
 	if (strcmp(line, " 12345678") == 0)			// Found a board
 	{
+		// Clear board
+		memset(board, 0, sizeof(Othello_board));
+
 		// Read board
 		for (int row = 0; row < 8; row++)
 		{
@@ -647,13 +631,13 @@ bool Othello::loadBoard(std::ifstream &file, Othello_board *board)
 				switch (line[col + 1])
 				{
 				case ' ':
-					this->setColor(row, col, OTHELLO_EMPTY);
+					Othello_setColor(board, row, col, OTHELLO_EMPTY);
 					break;
 				case 'X':
-					this->setColor(row, col, OTHELLO_WHITE);
+					Othello_setColor(board, row, col, OTHELLO_WHITE);
 					break;
 				case 'O':
-					this->setColor(row, col, OTHELLO_BLACK);
+					Othello_setColor(board, row, col, OTHELLO_BLACK);
 					break;
 				default:
 					return false;
@@ -685,6 +669,105 @@ bool Othello::loadBoard(std::ifstream &file, Othello_board *board)
  * FUNCTIONS
  */
 
+int  Othello_getCounter(Othello_board *board)
+{
+	return Othello_getWhiteCounter(board) + Othello_getBlackCounter(board);
+}
+
+int  Othello_getWhiteCounter(Othello_board *board)
+{
+#ifdef ARCH_x86_64
+	unsigned int *white = (unsigned int*)&board->white;
+#else
+	unsigned int *white = board->white;
+#endif
+
+	return
+		__builtin_popcount(white[0]) +
+		__builtin_popcount(white[1]);
+}
+
+int  Othello_getBlackCounter(Othello_board *board)
+{
+#ifdef ARCH_x86_64
+	unsigned int *black = (unsigned int*)&board->black;
+#else
+	unsigned int *black = board->black;
+#endif
+
+	return
+		__builtin_popcount(black[0]) +
+		__builtin_popcount(black[1]);
+}
+
+void Othello_getCounters(Othello_board *board, int &white, int &black)
+{
+	white = Othello_getWhiteCounter(board);
+	black = Othello_getBlackCounter(board);
+}
+
+int  Othello_getColor(Othello_board *board, int row, int col)
+{
+	int mask = 1 << col;
+
+#ifdef ARCH_x86_64
+	unsigned char *lineWhite = (unsigned char*)&board->white;
+	unsigned char *lineBlack = (unsigned char*)&board->black;
+#else
+	unsigned char *lineWhite = (unsigned char*)board->white;
+	unsigned char *lineBlack = (unsigned char*)board->black;
+#endif
+
+	if (lineWhite[row] & mask)
+		return OTHELLO_WHITE;
+	else if (lineBlack[row] & mask)
+		return OTHELLO_BLACK;
+	else
+		return OTHELLO_EMPTY;
+}
+
+void Othello_setColor(Othello_board *board, int row, int col, int color)
+{
+	unsigned char *lineColor;
+	unsigned char *lineOther;
+
+#ifdef ARCH_x86_64
+	if (color == OTHELLO_WHITE)
+	{
+		lineColor = (unsigned char*)&board->white;
+		lineOther = (unsigned char*)&board->black;
+	}
+	else
+	{
+		lineColor = (unsigned char*)&board->black;
+		lineOther = (unsigned char*)&board->white;
+	}
+#else
+	if (color == OTHELLO_WHITE)
+	{
+		lineColor = (unsigned char*)board->white;
+		lineOther = (unsigned char*)board->black;
+	}
+	else
+	{
+		lineColor = (unsigned char*)board->black;
+		lineOther = (unsigned char*)board->white;
+	}
+#endif
+
+	if (color == OTHELLO_EMPTY)
+	{
+		lineColor[row] &= ~(1 << col);
+		lineOther[row] &= ~(1 << col);
+	}
+	else
+	{
+		lineColor[row] |=  (1 << col);
+		lineOther[row] &= ~(1 << col);
+	}
+}
+
+#ifdef ARCH_x86_64
 bool Othello_move(Othello_board *board,	int row, int col, int color)
 {
 	unsigned char mask = 1 << col;
@@ -717,8 +800,7 @@ bool Othello_move(Othello_board *board,	int row, int col, int color)
 	{
 		other = ~lut[i].color & lut[i].mask;
 
-		if (((*lineColor & lut[i].color) |
-			 (*lineOther &        other)) == lut[i].mask)
+		if (((*lineColor & lut[i].color) | (*lineOther & other)) == lut[i].mask)
 		{
 			*lineColor += other;
 			*lineOther -= other;
@@ -731,3 +813,56 @@ bool Othello_move(Othello_board *board,	int row, int col, int color)
 
 	return moved;
 }
+#else
+bool Othello_move(Othello_board *board,	int row, int col, int color)
+{
+	unsigned char mask = 1 << col;
+	unsigned int *lineColor;
+	unsigned int *lineOther;
+	unsigned int offset = othello_LUTOffset[(col + row * 8) * 2];
+	unsigned int size   = othello_LUTOffset[(col + row * 8) * 2 + 1];
+	Othello_LUT *lut = &othello_LUT[offset];
+	bool moved = false;
+	unsigned int other[2];
+
+	if (color == OTHELLO_WHITE)
+	{
+		lineColor = &board->white[0];
+		lineOther = &board->black[0];
+	}
+	else
+	{
+		lineColor = &board->black[0];
+		lineOther = &board->white[0];
+	}
+
+	// Check if the tile is empty
+	if (((unsigned char*)board->white)[row] & mask ||
+		((unsigned char*)board->black)[row] & mask)
+		return false;
+
+	// Iterate in the positions
+	for (unsigned int i = 0; i < size; i++)
+	{
+		other[0] = ~lut[i].color[0] & lut[i].mask[0];
+		other[1] = ~lut[i].color[1] & lut[i].mask[1];
+
+		if (((lineColor[0] & lut[i].color[0]) |
+			 (lineOther[0] &        other[0])) == lut[i].mask[0] &&
+			((lineColor[1] & lut[i].color[1]) |
+			 (lineOther[1] &        other[1])) == lut[i].mask[1])
+		{
+			lineColor[0] += other[0];
+			lineColor[1] += other[1];
+			lineOther[0] -= other[0];
+			lineOther[1] -= other[1];
+			moved = true;
+		}
+	}
+
+	if (moved)
+		((unsigned char*)lineColor)[row] |= mask;
+
+	return moved;
+}
+#endif

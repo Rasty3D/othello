@@ -48,15 +48,14 @@ OPTIONS="-DROOT_DIR=$ROOT_DIR"
 
 
 # Detecting architecture
-echo -ne "${COLOR_INFO}Detecting architecture..."
+echo -ne "Detecting architecture..."
 ARCH=$(uname -m)
-echo -e "${COLOR_ITEM}${ARCH}"
+echo -e "${ARCH}"
 OPTIONS="$OPTIONS -DARCH=$ARCH"
-color_reset
 
 
 # Launch cmake with the automatic options
 echo "Launching CMake:"
-echo "  cmake $OPTIONS"
+echo "  cmake $ROOT_DIR $OPTIONS"
 cmake $ROOT_DIR $OPTIONS
 

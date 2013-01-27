@@ -19,13 +19,30 @@ typedef struct
 
 Tiles maskNcolor2Tiles(unsigned char *mask, unsigned char *color)
 {
+#ifdef ARCH_x86_64
 	Tiles tiles = {0, 0};
 
-	for (int i = 0; i < 64; i++)
+	unsigned int *tmask = (unsigned int*)&tiles.mask;
+	unsigned int *tcolor = (unsigned int*)&tiles.color;
+
+	for (int i = 0; i < 32; i++)
 	{
-		tiles.mask  +=  (mask[i] & 0x01) << i;
-		tiles.color += (color[i] & 0x01) << i;
+		tmask[0]  +=  (mask[i]      & 0x01) << i;
+		tmask[1]  +=  (mask[i + 32] & 0x01) << i;
+		tcolor[0] += (color[i]      & 0x01) << i;
+		tcolor[1] += (color[i + 32] & 0x01) << i;
 	}
+#else
+	Tiles tiles = {{0, 0}, {0, 0}};
+
+	for (int i = 0; i < 32; i++)
+	{
+		tiles.mask[0]  +=  (mask[i]      & 0x01) << i;
+		tiles.mask[1]  +=  (mask[i + 32] & 0x01) << i;
+		tiles.color[0] += (color[i]      & 0x01) << i;
+		tiles.color[1] += (color[i + 32] & 0x01) << i;
+	}
+#endif
 
 	return tiles;
 }
@@ -356,7 +373,11 @@ int main(int argc, char *argv[])
 	file << " * INCLUDES\n";
 	file << " */\n";
 	file << "\n";
+#ifdef ARCH_x86_64
+	file << "#include \"lut64.h\"\n";
+#else
 	file << "#include \"lut.h\"\n";
+#endif
 	file << "\n";
 
 	// Write variables

@@ -8,11 +8,11 @@ include_directories(include)
 if (${ARCH} STREQUAL "x86_64")
   add_library(othello
     src/othello.cpp
-    src/lut.cpp)
+    src/lut64.cpp)
 else ()
   add_library(othello
     src/othello.cpp
-    src/lut64.cpp)
+    src/lut.cpp)
 endif ()
 
 # Add test

@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 		// Add chip
 		clock_gettime(CLOCK_REALTIME, &time0);
 
-		if (!othello.addChip(answer.c_str()))
+		if (!othello.move(answer.c_str()))
 			std::cout << "Wrong movement" << std::endl;
 
 		clock_gettime(CLOCK_REALTIME, &time1);

@@ -517,6 +517,15 @@ bool Othello::engineMove()
 	return this->move(move);
 }
 
+bool Othello::engineReady()
+{
+	return 	this->engine.handle   != NULL &&
+			this->engine.getName  != NULL &&
+			this->engine.setParam != NULL &&
+			this->engine.move     != NULL;
+}
+
+
 int Othello::getCounter()
 {
 	return

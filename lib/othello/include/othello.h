@@ -95,6 +95,7 @@ public:
 	const char *engineGetName();
 	bool engineSetParam(const char *name, const char *value);
 	bool engineMove();
+	bool engineReady();
 
 private:
 	int getCounter();

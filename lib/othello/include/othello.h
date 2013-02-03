@@ -89,6 +89,8 @@ public:
 	bool load(const char *name);
 	bool save(const char *name);
 
+	int getTurn();
+
 	bool engineLoad(const char *name);
 	const char *engineGetName();
 	bool engineSetParam(const char *name, const char *value);

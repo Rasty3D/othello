@@ -419,6 +419,11 @@ bool Othello::save(const char *name)
 	return true;
 }
 
+int Othello::getTurn()
+{
+	return this->turn;
+}
+
 bool Othello::engineLoad(const char *name)
 {
 	if (this->engine.handle != NULL)

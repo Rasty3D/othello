@@ -23,6 +23,12 @@ else (DOXYGEN_FOUND)
 endif (DOXYGEN_FOUND)
 
 
+# Set architecture
+set(ARCH "i386" CACHE STRING "Processor architecture")
+add_definitions(-DARCH_${ARCH})
+message("Compiling for ${ARCH}")
+
+
 # Enable testing
 enable_testing()
 

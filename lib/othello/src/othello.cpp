@@ -1,4 +1,13 @@
+/*
+ * INCLUDES
+ */
+
 #include "othello.h"
+
+
+/*
+ * CLASSES
+ */
 
 Othello::Othello()
 {
@@ -18,12 +27,20 @@ Othello::~Othello()
 
 void Othello::reset()
 {
-	memset(this->board, OTHELLO_EMPTY, OTHELLO_BOARD_SIZE);
-	this->board[27] = OTHELLO_WHITE;
-	this->board[28] = OTHELLO_BLACK;
-	this->board[35] = OTHELLO_BLACK;
-	this->board[36] = OTHELLO_WHITE;
-	memcpy(this->history, this->board, OTHELLO_BOARD_SIZE);
+#ifdef ARCH_x86_64
+	this->board.white = 0;
+	this->board.black = 0;
+#else
+	this->board.white[0] = 0;
+	this->board.white[1] = 0;
+	this->board.black[0] = 0;
+	this->board.black[1] = 0;
+#endif
+	this->setColor(3, 3, OTHELLO_WHITE);
+	this->setColor(4, 4, OTHELLO_WHITE);
+	this->setColor(3, 4, OTHELLO_BLACK);
+	this->setColor(4, 3, OTHELLO_BLACK);
+	this->history[0] = this->board;
 	this->turn = OTHELLO_WHITE;
 }
 
@@ -35,22 +52,19 @@ void Othello::printSmall()
 
 	this->getCounters(whiteCounter, blackCounter);
 
-	// Init row letter
-	char row = 'A';
-
 	// Print header
 	std::cout << std::endl;
 	std::cout << "    1 2 3 4 5 6 7 8" << std::endl;
 	std::cout << "    _ _ _ _ _ _ _ _" << std::endl;
 
 	// Print board
-	for (int i = 0; i < 8; i++)
+	for (int row = 0; row < 8; row++)
 	{
-		std::cout << row << "  |";
+		std::cout << (char)(row + 'A') << "  |";
 
-		for (int j = 0; j < 8; j++)
+		for (int col = 0; col < 8; col++)
 		{
-			switch (board[j + i * 8])
+			switch (this->getColor(row, col))
 			{
 			case OTHELLO_EMPTY:
 				std::cout << "_|";
@@ -67,22 +81,21 @@ void Othello::printSmall()
 		}
 
 		// Print white counter in the first row
-		if (i == 0)
+		if (row == 0)
 			std::cout << "    White: " << whiteCounter;
 
 		// Print black counter in the second row
-		if (i == 1)
+		if (row == 1)
 			std::cout << "    Black: " << blackCounter;
 
 		// Print turn
-		if (i == 2)
+		if (row == 2)
 		{
 			std::cout << "    Next movement: ";
 			std::cout << (this->turn == OTHELLO_WHITE ? "white" : "black");
 		}
 
 		std::cout << std::endl;
-		row++;
 	}
 }
 
@@ -100,15 +113,15 @@ void Othello::printBig()
 	std::cout << "    ___ ___ ___ ___ ___ ___ ___ ___" << std::endl;
 
 	// Print board
-	for (int i = 0; i < 16; i++)
+	for (int row = 0; row < 16; row++)
 	{
-		if ((i % 2) == 0)
+		if ((row % 2) == 0)
 		{
-			std::cout << (char)(i / 2 + 'A') << "  |";
+			std::cout << (char)(row / 2 + 'A') << "  |";
 
-			for (int j = 0; j < 8; j++)
+			for (int col = 0; col < 8; col++)
 			{
-				switch (board[j + (i / 2) * 8])
+				switch (this->getColor(row / 2, col))
 				{
 				case OTHELLO_EMPTY:
 					std::cout << "   |";
@@ -128,9 +141,9 @@ void Othello::printBig()
 		{
 			std::cout << "   |";
 
-			for (int j = 0; j < 8; j++)
+			for (int col = 0; col < 8; col++)
 			{
-				switch (board[j + (i / 2) * 8])
+				switch (this->getColor(row / 2, col))
 				{
 				case OTHELLO_EMPTY:
 					std::cout << "___|";
@@ -148,15 +161,15 @@ void Othello::printBig()
 		}
 
 		// Print white counter in the first row
-		if (i == 0)
+		if (row == 0)
 			std::cout << "    White: " << whiteCounter;
 
 		// Print black counter in the second row
-		if (i == 1)
+		if (row == 1)
 			std::cout << "    Black: " << blackCounter;
 
 		// Print turn
-		if (i == 2)
+		if (row == 2)
 		{
 			std::cout << "    Next movement: ";
 			std::cout << (this->turn == OTHELLO_WHITE ? "white" : "black");
@@ -180,15 +193,15 @@ void Othello::printBigColor()
 	std::cout << "    ___ ___ ___ ___ ___ ___ ___ ___" << std::endl;
 
 	// Print board
-	for (int i = 0; i < 16; i++)
+	for (int row = 0; row < 16; row++)
 	{
-		if ((i % 2) == 0)
+		if ((row % 2) == 0)
 		{
-			std::cout << (char)(i / 2 + 'A') << "  |";
+			std::cout << (char)(row / 2 + 'A') << "  |";
 
-			for (int j = 0; j < 8; j++)
+			for (int col = 0; col < 8; col++)
 			{
-				switch (board[j + (i / 2) * 8])
+				switch (this->getColor(row / 2, col))
 				{
 				case OTHELLO_EMPTY:
 					std::cout << "   |";
@@ -214,9 +227,9 @@ void Othello::printBigColor()
 		{
 			std::cout << "   |";
 
-			for (int j = 0; j < 8; j++)
+			for (int col = 0; col < 8; col++)
 			{
-				switch (board[j + (i / 2) * 8])
+				switch (this->getColor(row / 2, col))
 				{
 				case OTHELLO_EMPTY:
 					std::cout << "___|";
@@ -240,7 +253,7 @@ void Othello::printBigColor()
 		}
 
 		// Print white counter in the first row
-		if (i == 0)
+		if (row == 0)
 		{
 			std::cout << OTHELLO_COLOR_TEXT_WHITE;
 			std::cout << "    White: " << whiteCounter;
@@ -248,7 +261,7 @@ void Othello::printBigColor()
 		}
 
 		// Print black counter in the second row
-		if (i == 1)
+		if (row == 1)
 		{
 			std::cout << OTHELLO_COLOR_TEXT_BLACK;
 			std::cout << "    Red  : " << blackCounter;
@@ -256,7 +269,7 @@ void Othello::printBigColor()
 		}
 
 		// Print turn
-		if (i == 2)
+		if (row == 2)
 		{
 			std::cout << "    Next movement: ";
 			if (this->turn == OTHELLO_WHITE)
@@ -276,15 +289,15 @@ void Othello::printBigColor()
 	}
 }
 
-bool Othello::addChip(const char *move)
+bool Othello::move(const char *move)
 {
 	// Init row and column
 	int row = -1;
-	int column = -1;
+	int col = -1;
 
 	// Get row & column
 	if (move[0] >= '1' && move[0] <= '8')
-		column = move[0] - '1';
+		col = move[0] - '1';
 	else if (move[0] >= 'a' && move[0] <= 'h')
 		row = move[0] - 'a';
 	else if (move[0] >= 'A' && move[0] <= 'H')
@@ -294,7 +307,7 @@ bool Othello::addChip(const char *move)
 
 	// Get row & column
 	if (move[1] >= '1' && move[1] <= '8')
-		column = move[1] - '1';
+		col = move[1] - '1';
 	else if (move[1] >= 'a' && move[1] <= 'h')
 		row = move[1] - 'a';
 	else if (move[1] >= 'A' && move[1] <= 'H')
@@ -303,11 +316,11 @@ bool Othello::addChip(const char *move)
 		return false;
 
 	// Check variables
-	if (row == -1 || column == -1)
+	if (row == -1 || col == -1)
 		return false;
 
 	// Add chip
-	return this->addChip(this->turn, row, column);
+	return this->move(this->turn, row, col);
 }
 
 void Othello::undo()
@@ -317,10 +330,7 @@ void Othello::undo()
 	if (counter >= 0)
 	{
 		// Load history
-		memcpy(
-			this->board,
-			&this->history[counter * OTHELLO_BOARD_SIZE],
-			OTHELLO_BOARD_SIZE);
+		this->board = this->history[counter];
 
 		// Change turn
 		if (this->turn == OTHELLO_WHITE)
@@ -349,11 +359,11 @@ bool Othello::load(const char *name)
 		return false;
 
 	// Read history
-	unsigned char historyAux[OTHELLO_BOARD_SIZE * OTHELLO_HISTORY_SIZE];
+	Othello_board historyAux[OTHELLO_HISTORY_SIZE];
 
-	for (int i = 0; i < OTHELLO_BOARD_SIZE; i++)
+	for (int i = 0; i < OTHELLO_HISTORY_SIZE; i++)
 	{
-		if (!this->loadBoard(file, &historyAux[i * OTHELLO_BOARD_SIZE]))
+		if (!this->loadBoard(file, &historyAux[i]))
 		{
 			file.close();
 			return false;
@@ -365,13 +375,10 @@ bool Othello::load(const char *name)
 			memcpy(
 				this->history,
 				historyAux,
-				OTHELLO_BOARD_SIZE * OTHELLO_HISTORY_SIZE);
+				sizeof(Othello_board) * OTHELLO_HISTORY_SIZE);
 
 			// Save board
-			memcpy(
-				this->board,
-				&historyAux[(i - 1) * OTHELLO_BOARD_SIZE],
-				OTHELLO_BOARD_SIZE);
+			this->board = historyAux[i - 1];
 
 			break;
 		}
@@ -396,10 +403,10 @@ bool Othello::save(const char *name)
 
 	// Write history
 	for (int i = 0; i < counter - 4; i++)
-		this->saveBoard(file, &this->history[i * OTHELLO_BOARD_SIZE]);
+		this->saveBoard(file, &this->history[i]);
 
 	// Write board
-	this->saveBoard(file, this->board);
+	this->saveBoard(file, &this->board);
 
 	// Write turn
 	if (this->turn == OTHELLO_WHITE)
@@ -410,6 +417,11 @@ bool Othello::save(const char *name)
 	// Close file and exit
 	file.close();
 	return true;
+}
+
+int Othello::getTurn()
+{
+	return this->turn;
 }
 
 bool Othello::engineLoad(const char *name)
@@ -502,101 +514,61 @@ bool Othello::engineMove()
 		return false;
 
 	// Do move
-	return this->addChip(move);
+	return this->move(move);
 }
 
 int Othello::getCounter()
 {
-	int counter = 0;
-
-	for (int i = 0; i < OTHELLO_BOARD_SIZE; i++)
-	{
-		if (this->board[i] != OTHELLO_EMPTY)
-			counter++;
-	}
-
-	return counter;
+	return
+		Othello_getWhiteCounter(&this->board) +
+		Othello_getBlackCounter(&this->board);
 }
 
 int Othello::getWhiteCounter()
 {
-	int counter = 0;
-
-	for (int i = 0; i < OTHELLO_BOARD_SIZE; i++)
-	{
-		if (this->board[i] == OTHELLO_WHITE)
-			counter++;
-	}
-
-	return counter;
+	return Othello_getWhiteCounter(&this->board);
 }
 
 int Othello::getBlackCounter()
 {
-	int counter = 0;
-
-	for (int i = 0; i < OTHELLO_BOARD_SIZE; i++)
-	{
-		if (this->board[i] == OTHELLO_BLACK)
-			counter++;
-	}
-
-	return counter;
+	return Othello_getBlackCounter(&this->board);
 }
 
 void Othello::getCounters(int &white, int &black)
 {
-	white = 0;
-	black = 0;
-
-	for (int i = 0; i < OTHELLO_BOARD_SIZE; i++)
-	{
-		if (this->board[i] == OTHELLO_WHITE)
-			white++;
-		else if (this->board[i] == OTHELLO_BLACK)
-			black++;
-	}
+	white = Othello_getWhiteCounter(&this->board);
+	black = Othello_getBlackCounter(&this->board);
 }
 
-bool Othello::addChip(int color, int row, int column)
+int Othello::getColor(int row, int col)
 {
-		/* Checkings */
+	return Othello_getColor(&this->board, row, col);
+}
 
-	// Check if tile is empty
-	if (this->board[column + row * 8] != OTHELLO_EMPTY)
-		return false;
+void Othello::setColor(int row, int col, int color)
+{
+	Othello_setColor(&this->board, row, col, color);
+}
 
-
+bool Othello::move(int color, int row, int col)
+{
 		/* Save history */
 
 	int counter = this->getCounter() - 4;
-	memcpy(
-		&this->history[counter * OTHELLO_BOARD_SIZE],
-		this->board,
-		OTHELLO_BOARD_SIZE);
+	this->history[counter] = this->board;
 
 
-		/* Check 8 directions */
+		/* Do the move */
 
-	bool check = false;
+	Othello_board newBoard = this->board;
 
-	if (this->checkDirection(color, row, column, -1, -1)) check = true;
-	if (this->checkDirection(color, row, column, -1,  0)) check = true;
-	if (this->checkDirection(color, row, column, -1,  1)) check = true;
-	if (this->checkDirection(color, row, column,  0, -1)) check = true;
-	if (this->checkDirection(color, row, column,  0,  1)) check = true;
-	if (this->checkDirection(color, row, column,  1, -1)) check = true;
-	if (this->checkDirection(color, row, column,  1,  0)) check = true;
-	if (this->checkDirection(color, row, column,  1,  1)) check = true;
-
-	if (!check)
+	if (!Othello_move(&newBoard, row, col, color))
 		return false;
 
+	this->board = newBoard;
 
-		/* Do last things */
 
-	// Set tile color
-	this->board[column + row * 8] = color;
+		/* Change turn */
 
 	// Change turn
 	if (this->turn == OTHELLO_WHITE)
@@ -608,94 +580,17 @@ bool Othello::addChip(int color, int row, int column)
 	return true;
 }
 
-bool Othello::checkDirection(
-	int color,
-	int row, int column,
-	int directionRow, int directionColumn)
-{
-	// Write in a vector the tiles of the direction
-	unsigned char *tiles[8];
-	int rowAux;
-	int columnAux;
-
-	tiles[0] = NULL;
-	tiles[1] = NULL;
-	tiles[2] = NULL;
-	tiles[3] = NULL;
-	tiles[4] = NULL;
-	tiles[5] = NULL;
-	tiles[6] = NULL;
-	tiles[7] = NULL;
-
-	for (int i = 0; i < 8; i++)
-	{
-		rowAux    = row    + directionRow    * i;
-		columnAux = column + directionColumn * i;
-
-		if (rowAux    < 0 || rowAux    >= 8 ||
-			columnAux < 0 || columnAux >= 8)
-		{
-			if (i <= 1)
-				return false;
-			break;
-		}
-
-		tiles[i] = &this->board[columnAux + rowAux * 8];
-	}
-
-	// Check next tile
-	if (tiles[1] == NULL || *tiles[1] == color || *tiles[1] == OTHELLO_EMPTY)
-		return false;
-
-	// Look for the line of different color
-	for (int i = 2; i <= 8; i++)
-	{
-		// Not found a tile with the same color
-		if (i == 8)
-			return false;
-
-		// Not found a tile with the same color
-		if (tiles[i] == NULL)
-			return false;
-
-		// Found an empty tile
-		if (*tiles[i] == OTHELLO_EMPTY)
-			return false;
-
-		// Found one with the same color
-		if (*tiles[i] == color)
-			break;
-	}
-
-	// Change color of the line
-	for (int i = 1; i < 8; i++)
-	{
-		// This shouldn't happen
-		if (tiles[i] == NULL)
-			return false;
-
-		// Finished
-		if (*tiles[i] == color)
-			return true;
-
-		// Change tile color
-		*tiles[i] = color;
-	}
-
-	return false;
-}
-
-void Othello::saveBoard(std::ofstream &file, unsigned char *board)
+void Othello::saveBoard(std::ofstream &file, Othello_board *board)
 {
 	file << " 12345678\n";
 
-	for (int i = 0; i < 8; i++)
+	for (int row = 0; row < 8; row++)
 	{
-		file << (char)(i + 'A');
+		file << (char)(row + 'A');
 
-		for (int j = 0; j < 8; j++)
+		for (int col = 0; col < 8; col++)
 		{
-			switch (board[j + i * 8])
+			switch (Othello_getColor(board, row, col))
 			{
 			case OTHELLO_EMPTY:
 				file << " ";
@@ -715,7 +610,7 @@ void Othello::saveBoard(std::ofstream &file, unsigned char *board)
 	}
 }
 
-bool Othello::loadBoard(std::ifstream &file, unsigned char *board)
+bool Othello::loadBoard(std::ifstream &file, Othello_board *board)
 {
 	// Read a line
 	char line[16];
@@ -725,26 +620,29 @@ bool Othello::loadBoard(std::ifstream &file, unsigned char *board)
 
 	if (strcmp(line, " 12345678") == 0)			// Found a board
 	{
+		// Clear board
+		memset(board, 0, sizeof(Othello_board));
+
 		// Read board
-		for (int i = 0; i < 8; i++)
+		for (int row = 0; row < 8; row++)
 		{
 			file.getline(line, 16);
 
-			if (line[0] != i + 'A')
+			if (line[0] != row + 'A')
 				return false;
 
-			for (int j = 0; j < 8; j++)
+			for (int col = 0; col < 8; col++)
 			{
-				switch (line[j + 1])
+				switch (line[col + 1])
 				{
 				case ' ':
-					board[j + i * 8] = OTHELLO_EMPTY;
+					Othello_setColor(board, row, col, OTHELLO_EMPTY);
 					break;
 				case 'X':
-					board[j + i * 8] = OTHELLO_WHITE;
+					Othello_setColor(board, row, col, OTHELLO_WHITE);
 					break;
 				case 'O':
-					board[j + i * 8] = OTHELLO_BLACK;
+					Othello_setColor(board, row, col, OTHELLO_BLACK);
 					break;
 				default:
 					return false;
@@ -770,3 +668,206 @@ bool Othello::loadBoard(std::ifstream &file, unsigned char *board)
 		return false;
 	}
 }
+
+
+/*
+ * FUNCTIONS
+ */
+
+int  Othello_getCounter(Othello_board *board)
+{
+	return Othello_getWhiteCounter(board) + Othello_getBlackCounter(board);
+}
+
+int  Othello_getWhiteCounter(Othello_board *board)
+{
+#ifdef ARCH_x86_64
+	unsigned int *white = (unsigned int*)&board->white;
+#else
+	unsigned int *white = board->white;
+#endif
+
+	return
+		__builtin_popcount(white[0]) +
+		__builtin_popcount(white[1]);
+}
+
+int  Othello_getBlackCounter(Othello_board *board)
+{
+#ifdef ARCH_x86_64
+	unsigned int *black = (unsigned int*)&board->black;
+#else
+	unsigned int *black = board->black;
+#endif
+
+	return
+		__builtin_popcount(black[0]) +
+		__builtin_popcount(black[1]);
+}
+
+void Othello_getCounters(Othello_board *board, int &white, int &black)
+{
+	white = Othello_getWhiteCounter(board);
+	black = Othello_getBlackCounter(board);
+}
+
+int  Othello_getColor(Othello_board *board, int row, int col)
+{
+	int mask = 1 << col;
+
+#ifdef ARCH_x86_64
+	unsigned char *lineWhite = (unsigned char*)&board->white;
+	unsigned char *lineBlack = (unsigned char*)&board->black;
+#else
+	unsigned char *lineWhite = (unsigned char*)board->white;
+	unsigned char *lineBlack = (unsigned char*)board->black;
+#endif
+
+	if (lineWhite[row] & mask)
+		return OTHELLO_WHITE;
+	else if (lineBlack[row] & mask)
+		return OTHELLO_BLACK;
+	else
+		return OTHELLO_EMPTY;
+}
+
+void Othello_setColor(Othello_board *board, int row, int col, int color)
+{
+	unsigned char *lineColor;
+	unsigned char *lineOther;
+
+#ifdef ARCH_x86_64
+	if (color == OTHELLO_WHITE)
+	{
+		lineColor = (unsigned char*)&board->white;
+		lineOther = (unsigned char*)&board->black;
+	}
+	else
+	{
+		lineColor = (unsigned char*)&board->black;
+		lineOther = (unsigned char*)&board->white;
+	}
+#else
+	if (color == OTHELLO_WHITE)
+	{
+		lineColor = (unsigned char*)board->white;
+		lineOther = (unsigned char*)board->black;
+	}
+	else
+	{
+		lineColor = (unsigned char*)board->black;
+		lineOther = (unsigned char*)board->white;
+	}
+#endif
+
+	if (color == OTHELLO_EMPTY)
+	{
+		lineColor[row] &= ~(1 << col);
+		lineOther[row] &= ~(1 << col);
+	}
+	else
+	{
+		lineColor[row] |=  (1 << col);
+		lineOther[row] &= ~(1 << col);
+	}
+}
+
+#ifdef ARCH_x86_64
+bool Othello_move(Othello_board *board,	int row, int col, int color)
+{
+	unsigned char mask = 1 << col;
+	unsigned long *lineColor;
+	unsigned long *lineOther;
+	unsigned int offset = othello_LUTOffset[(col + row * 8) * 2];
+	unsigned int size   = othello_LUTOffset[(col + row * 8) * 2 + 1];
+	Othello_LUT *lut = &othello_LUT[offset];
+	bool moved = false;
+	unsigned long other;
+
+	if (color == OTHELLO_WHITE)
+	{
+		lineColor = &board->white;
+		lineOther = &board->black;
+	}
+	else
+	{
+		lineColor = &board->black;
+		lineOther = &board->white;
+	}
+
+	// Check if the tile is empty
+	if (((unsigned char*)&board->white)[row] & mask ||
+		((unsigned char*)&board->black)[row] & mask)
+		return false;
+
+	// Iterate in the positions
+	for (unsigned int i = 0; i < size; i++)
+	{
+		other = ~lut[i].color & lut[i].mask;
+
+		if (((*lineColor & lut[i].color) | (*lineOther & other)) == lut[i].mask)
+		{
+			*lineColor += other;
+			*lineOther -= other;
+			moved = true;
+		}
+	}
+
+	if (moved)
+		((unsigned char*)lineColor)[row] |= mask;
+
+	return moved;
+}
+#else
+bool Othello_move(Othello_board *board,	int row, int col, int color)
+{
+	unsigned char mask = 1 << col;
+	unsigned int *lineColor;
+	unsigned int *lineOther;
+	unsigned int offset = othello_LUTOffset[(col + row * 8) * 2];
+	unsigned int size   = othello_LUTOffset[(col + row * 8) * 2 + 1];
+	Othello_LUT *lut = &othello_LUT[offset];
+	bool moved = false;
+	unsigned int other[2];
+
+	if (color == OTHELLO_WHITE)
+	{
+		lineColor = &board->white[0];
+		lineOther = &board->black[0];
+	}
+	else
+	{
+		lineColor = &board->black[0];
+		lineOther = &board->white[0];
+	}
+
+	// Check if the tile is empty
+	if (((unsigned char*)board->white)[row] & mask ||
+		((unsigned char*)board->black)[row] & mask)
+		return false;
+
+	// Iterate in the positions
+	for (unsigned int i = 0; i < size; i++)
+	{
+		other[0] = ~lut[i].color[0] & lut[i].mask[0];
+		other[1] = ~lut[i].color[1] & lut[i].mask[1];
+
+		if (((lineColor[0] & lut[i].color[0]) |
+			 (lineOther[0] &        other[0])) == lut[i].mask[0] &&
+			((lineColor[1] & lut[i].color[1]) |
+			 (lineOther[1] &        other[1])) == lut[i].mask[1])
+		{
+			lineColor[0] += other[0];
+			lineColor[1] += other[1];
+			lineOther[0] -= other[0];
+			lineOther[1] -= other[1];
+			moved = true;
+		}
+	}
+
+	if (moved)
+		((unsigned char*)lineColor)[row] |= mask;
+
+	return moved;
+}
+#endif

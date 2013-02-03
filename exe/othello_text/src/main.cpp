@@ -8,6 +8,24 @@
 
 
 /*
+ * DEFINES
+ */
+
+#define PLAYER_HUMAN	0
+#define PLAYER_COMPUTER	1
+
+
+/*
+ * PROCESS LINE
+ */
+
+bool processLine(const std::string &line)
+{
+	return true;
+}
+
+
+/*
  * MAIN
  */
 
@@ -29,14 +47,34 @@ int main(int argc, char *argv[])
 	struct timespec time0, time1;
 	double timeDelta;
 
+	// Players
+	int playerWhite = PLAYER_HUMAN;
+	int playerBlack = PLAYER_HUMAN;
+
 	// Main loop
 	while (1)
 	{
 		// Print board
 		othello.printBigColor();
+		std::cout << std::endl;
+
+		// Check if computer has to move
+		if ((othello.getTurn() == OTHELLO_WHITE &&
+			 playerWhite == PLAYER_COMPUTER) ||
+			(othello.getTurn() == OTHELLO_BLACK &&
+			 playerBlack == PLAYER_COMPUTER))
+		{
+			if (!othello.engineMove())
+			{
+				std::cout << "Invalid engine move. Skiping turn";
+				std::cout << std::endl;
+				othello.skip();
+			}
+
+			continue;
+		}
 
 		// Ask for new move
-		std::cout << std::endl;
 		std::cout << "Enter command> ";
 		std::getline(std::cin, answer);
 
@@ -107,6 +145,27 @@ int main(int argc, char *argv[])
 			// TODO
 			continue;
 		}
+		else if (answer == "eng_white")
+		{
+			playerWhite = PLAYER_COMPUTER;
+			playerBlack = PLAYER_HUMAN;
+			std::cout << "Computer plays white";
+			continue;
+		}
+		else if (answer == "eng_black")
+		{
+			playerWhite = PLAYER_HUMAN;
+			playerBlack = PLAYER_COMPUTER;
+			std::cout << "Computer plays black";
+			continue;
+		}
+		else if (answer == "eng_none")
+		{
+			playerWhite = PLAYER_HUMAN;
+			playerBlack = PLAYER_HUMAN;
+			std::cout << "Computer doesn't play";
+			continue;
+		}
 		else if (answer == "help")
 		{
 			std::cout << "Command list:" << std::endl;
@@ -118,10 +177,13 @@ int main(int argc, char *argv[])
 			std::cout << "  new : Starts a new game" << std::endl;
 			std::cout << "  load: Loads a game" << std::endl;
 			std::cout << "  save: Saves a game" << std::endl;
-			std::cout << "  eng_load: Loads an engine" << std::endl;
-			std::cout << "  eng_move: The current engine does a move" << std::endl;
-			std::cout << "  eng_name: Gets current engine name" << std::endl;
-			std::cout << "  eng_prop: Sets a property of the current engine" << std::endl;
+			std::cout << "  eng_load : Loads an engine" << std::endl;
+			std::cout << "  eng_move : The current engine does a move" << std::endl;
+			std::cout << "  eng_name : Gets current engine name" << std::endl;
+			std::cout << "  eng_prop : Sets a property of the current engine" << std::endl;
+			std::cout << "  eng_white: Computer plays with white" << std::endl;
+			std::cout << "  eng_black: Computer plays with black" << std::endl;
+			std::cout << "  eng_nonw : Computer doesn't play" << std::endl;
 			std::cout << "  To introduce a new move, write row and column";
 			std::cout << " (for example 4f)" << std::endl;
 			continue;
@@ -130,7 +192,7 @@ int main(int argc, char *argv[])
 		// Add chip
 		clock_gettime(CLOCK_REALTIME, &time0);
 
-		if (!othello.addChip(answer.c_str()))
+		if (!othello.move(answer.c_str()))
 			std::cout << "Wrong movement" << std::endl;
 
 		clock_gettime(CLOCK_REALTIME, &time1);

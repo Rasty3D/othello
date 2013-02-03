@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <string>
+#include <dirent.h>
 #include "othello.h"
 
 
@@ -194,6 +195,41 @@ bool processLine(
 				std::cout << "Error saving game" << std::endl;
 		}
 	}
+	else if (strcmp(argv[0], "eng_list") == 0)
+	{
+		DIR *dir = opendir(PATH_ENGINES);
+		struct dirent *ent;
+		int nameLen;
+
+		if (dir)
+		{
+			std::cout << "List of engines:" << std::endl;
+
+			while ((ent = readdir(dir)) != NULL)
+			{
+				if (ent->d_type == DT_REG)
+				{
+					nameLen = strlen(ent->d_name);
+
+					if (nameLen > 5 &&
+						ent->d_name[nameLen - 4] == '.' &&
+						ent->d_name[nameLen - 3] == 'e' &&
+						ent->d_name[nameLen - 2] == 'n' &&
+						ent->d_name[nameLen - 1] == 'g')
+					{
+						ent->d_name[nameLen - 4] = '\0';
+						std::cout << "  " << ent->d_name << std::endl;
+					}
+				}
+			}
+
+			closedir(dir);
+		}
+		else
+		{
+			std::cout << "Error reading the engines folder" << std::endl;
+		}
+	}
 	else if (strcmp(argv[0], "eng_load") == 0)
 	{
 		if (argc < 2)
@@ -289,10 +325,11 @@ bool processLine(
 		std::cout << "  new                      Starts a new game" << std::endl;
 		std::cout << "  load [game name]         Loads a game" << std::endl;
 		std::cout << "  save [game name]         Saves a game" << std::endl;
+		std::cout << "  eng_list                 List the available engines" << std::endl;
 		std::cout << "  eng_load [engine name]   Loads an engine" << std::endl;
 		std::cout << "  eng_move                 The current engine does a move" << std::endl;
 		std::cout << "  eng_name                 Gets current engine name" << std::endl;
-		std::cout << "  eng_param [name] [value] Sets a property of the current engine" << std::endl;
+		std::cout << "  eng_param [name] [value] Sets a parameter of the current engine" << std::endl;
 		std::cout << "  eng_white                Computer plays with white" << std::endl;
 		std::cout << "  eng_black                Computer plays with black" << std::endl;
 		std::cout << "  eng_none                 Computer doesn't play" << std::endl;
